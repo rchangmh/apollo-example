@@ -46,13 +46,55 @@ const ExchangeRates = () => (
   </Query>
 )
 
-const App = () => (
+class ExchangeRateComponent extends React.Component {
+  state = {
+    response_data: null,
+  }
+
+  componentDidMount = async () => {
+    let response = await client.query({
+      query: gql`
+        {
+          rates(currency: "USD") {
+            currency
+            rate
+          }
+        }
+      `,
+    })
+    await this.setState({ response_data: response.data })
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.response_data &&
+          this.state.response_data.rates.map(({ currency, rate }) => (
+            <div key={currency}>
+              <p>{`${currency}: ${rate}`}</p>
+            </div>
+          ))}
+      </div>
+    )
+  }
+}
+
+const App = props => (
   <ApolloProvider client={client}>
     <div>
-      <h2>My first Apollo app 🚀</h2>
-      <ExchangeRates />
+      {props.value === 'react' ? (
+        <div>
+          <h1>React.Component 🚀</h1>
+          <ExchangeRateComponent />
+        </div>
+      ) : (
+        <div>
+          <h1>Query Component 🚀</h1>
+          <ExchangeRates />
+        </div>
+      )}
     </div>
   </ApolloProvider>
 )
 
-render(<App />, document.getElementById('root'))
+render(<App value="react" />, document.getElementById('root'))
